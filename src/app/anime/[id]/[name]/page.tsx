@@ -1,6 +1,5 @@
+import { getAnimeById } from "@/lib/jikan";
 import { notFound } from "next/navigation";
-import { jikanAPI } from "@/lib/jikan";
-
 export default async function AnimePage({
   params,
 }: {
@@ -8,17 +7,17 @@ export default async function AnimePage({
 }) {
   try {
     const { id } = await params;
-    const response = await jikanAPI.getAnimeById(id);
+    const response = await getAnimeById(id);
     const anime = response.data;
 
-    if (!anime) {
+    if (!anime || Array.isArray(anime)) {
       notFound();
     }
 
     return (
       <div>
         <h1>{anime.title}</h1>
-        <p>{anime.synopsis}</p>
+        <div>{anime.synopsis}</div>
       </div>
     );
   } catch (error) {
@@ -29,8 +28,12 @@ export default async function AnimePage({
 export async function generateMetadata({ params }: { params: { id: string } }) {
   try {
     const { id } = await params;
-    const response = await jikanAPI.getAnimeById(id);
+    const response = await getAnimeById(id);
     const anime = response.data;
+
+    if (!anime || Array.isArray(anime)) {
+      return { title: "Anime Not Found" };
+    }
 
     return {
       title: `${anime.title} - Animipa`,
@@ -45,7 +48,7 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
     };
   } catch (error) {
     return {
-      title: "Anime Not Found - AnimeHub",
+      title: `Anime Not Found - AnimeHub`,
     };
   }
 }
