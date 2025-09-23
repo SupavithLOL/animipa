@@ -22,7 +22,6 @@ export default async function AnimePage({
       </div>
     );
   } catch (error) {
-    console.log("Error: " + error);
     notFound();
   }
 }
@@ -45,7 +44,6 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
       },
     };
   } catch (error) {
-    console.log("Error: " + error);
     return {
       title: "Anime Not Found - AnimeHub",
     };
