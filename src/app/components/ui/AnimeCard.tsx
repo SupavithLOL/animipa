@@ -29,21 +29,27 @@ export default function AnimeCard({
   };
 
   const handleMouseEnter = () => {
-    setIsHovered(true);
-    if (videoRef.current && !videoError) {
-      setTimeout(() => {
-        videoRef.current?.play().catch(() => {
-          setVideoError(true);
-        });
-      }, 300);
+    // Only work on desktop (non-touch devices)
+    if (window.matchMedia("(hover: hover)").matches) {
+      setIsHovered(true);
+      if (videoRef.current && !videoError) {
+        setTimeout(() => {
+          videoRef.current?.play().catch(() => {
+            setVideoError(true);
+          });
+        }, 300);
+      }
     }
   };
 
   const handleMouseLeave = () => {
-    setIsHovered(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
+    // Only work on desktop (non-touch devices)
+    if (window.matchMedia("(hover: hover)").matches) {
+      setIsHovered(false);
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+      }
     }
   };
 
@@ -61,51 +67,54 @@ export default function AnimeCard({
         }, 300);
       }
     }
-    // Second touch will be handled by the Link component naturally
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    // Reset touch state after a delay if not navigating
-    if (isTouched) {
-      setTimeout(() => {
-        setIsTouched(false);
-        if (videoRef.current) {
-          videoRef.current.pause();
-          videoRef.current.currentTime = 0;
+  const handleClick = (e: React.MouseEvent) => {
+    // For touch devices, handle click separately
+    if (!window.matchMedia("(hover: hover)").matches) {
+      e.preventDefault();
+
+      if (!isTouched) {
+        // First click on mobile - show video and button
+        setIsTouched(true);
+        if (videoRef.current && !videoError) {
+          setTimeout(() => {
+            videoRef.current?.play().catch(() => {
+              setVideoError(true);
+            });
+          }, 300);
         }
-      }, 5000); // Auto-hide after 5 seconds
+      }
+      // If already touched, let the Link handle navigation naturally
     }
+    // On desktop, let the Link handle navigation normally
   };
 
   const handleDetailClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    // Navigate to detail page
     window.location.href = `/anime/${mal_id}`;
   };
 
   const videoUrl = getVideoUrl();
   const hasVideo = videoUrl && !videoError;
-  const showOverlay = isHovered || isTouched;
+  // Only show overlay on hover for desktop, or when touched on mobile
+  const showOverlay =
+    (window?.matchMedia &&
+      window.matchMedia("(hover: hover)").matches &&
+      isHovered) ||
+    !window?.matchMedia ||
+    (!window.matchMedia("(hover: hover)").matches && isTouched);
 
   return (
     <div className="relative w-full">
-      <Link
-        href={`/anime/${mal_id}`}
-        onClick={(e) => {
-          // On mobile, prevent navigation on first touch
-          if (isTouched && hasVideo) {
-            return; // Allow navigation
-          } else if (!isTouched && hasVideo && window.innerWidth <= 768) {
-            e.preventDefault(); // Prevent navigation on first touch on mobile
-          }
-        }}
-      >
+      <Link href={`/anime/${mal_id}`} onClick={handleClick}>
         <div
           className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-lg cursor-pointer group bg-gray-800 transition-transform duration-300 hover:scale-105"
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
         >
           <Image
             src={
