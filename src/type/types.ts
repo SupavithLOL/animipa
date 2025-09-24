@@ -26,15 +26,15 @@ export interface Anime {
       large_image_url: string
     };
   };
-  trailer: {
+  trailer?: {
     youtube_id: string;
     url: string;
     embed_url: string;
   }
   score?: number;
-  rank: number;
-  favorrites: number;
-  synopsis: string;
+  rank?: number;
+  favorites: number;
+  synopsis?: string;
   season: string;
   genres: [
     {

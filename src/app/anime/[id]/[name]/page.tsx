@@ -1,54 +1,40 @@
 import { getAnimeById } from "@/lib/jikan";
 import { notFound } from "next/navigation";
+
 export default async function AnimePage({
   params,
 }: {
   params: { id: string };
 }) {
-  try {
-    const { id } = await params;
-    const response = await getAnimeById(id);
-    const anime = response.data;
+  const { id } = await params;
+  const response = await getAnimeById(id);
+  const anime = response.data;
 
-    if (!anime || Array.isArray(anime)) {
-      notFound();
-    }
+  if (!anime) notFound();
 
-    return (
-      <div>
-        <h1>{anime.title}</h1>
-        <div>{anime.synopsis}</div>
-      </div>
-    );
-  } catch (error) {
-    notFound();
-  }
+  return (
+    <div>
+      <h1>{anime.title}</h1>
+      <div>{anime.synopsis}</div>
+    </div>
+  );
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
-  try {
-    const { id } = await params;
-    const response = await getAnimeById(id);
-    const anime = response.data;
+  const { id } = await params;
+  const response = await getAnimeById(id);
+  const anime = response.data;
 
-    if (!anime || Array.isArray(anime)) {
-      return { title: "Anime Not Found" };
-    }
+  if (!anime) return { title: "Anime Not Found" };
 
-    return {
-      title: `${anime.title} - Animipa`,
-      description:
-        anime.synopsis?.slice(0, 160) ||
-        `ดูข้อมูล ${anime.title} อนิเมะยอดนิยม`,
-      openGraph: {
-        title: anime.title,
-        description: anime.synopsis?.slice(0, 160),
-        images: [anime.images?.jpg?.large_image_url],
-      },
-    };
-  } catch (error) {
-    return {
-      title: `Anime Not Found - AnimeHub`,
-    };
-  }
+  return {
+    title: `${anime.title} - Animipa`,
+    description:
+      anime.synopsis?.slice(0, 160) || `ดูข้อมูล ${anime.title} อนิเมะยอดนิยม`,
+    openGraph: {
+      title: anime.title,
+      description: anime.synopsis?.slice(0, 160),
+      images: [anime.images?.jpg?.large_image_url],
+    },
+  };
 }
